@@ -1,1 +1,316 @@
-<a href- "#"> Test </a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACCM Dialer Versions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/styles/github-dark.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            min-height: 100vh;
+            padding: 2rem;
+            color: white;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+
+        .file-explorer {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(10px);
+        }
+
+        .item i {
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .folder i {
+            color: #ffd700;
+        }
+
+        .file i {
+            color: #a0a0a0;
+        }
+
+        .breadcrumb {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+        }
+
+        .breadcrumb a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .breadcrumb i {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .preview-popup {
+            position: fixed;
+            background: rgb(30, 30, 30);
+            border-radius: 12px;
+            padding: 20px;
+            width: 90%;
+            max-width: 800px;
+            height: auto;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: none;
+            z-index: 1000;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .preview-popup.active {
+            display: block;
+        }
+
+        .preview-content {
+            color: #e0e0e0;
+            line-height: 1.6;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            padding-right: 15px;
+        }
+
+        .preview-content h1,
+        .preview-content h2,
+        .preview-content h3 {
+            color: #fff;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .preview-content h1:first-child {
+            margin-top: 0;
+        }
+
+        .preview-content p {
+            margin-bottom: 1rem;
+            word-wrap: break-word;
+        }
+
+        .preview-content code {
+            background: rgba(255,255,255,0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .preview-content pre {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .preview-content img {
+            max-width: 100%;
+            height: auto;
+            margin: 1rem 0;
+        }
+
+        .preview-content ul,
+        .preview-content ol {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+
+        .preview-content blockquote {
+            border-left: 4px solid rgba(255,255,255,0.2);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: #a0a0a0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .preview-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .preview-content::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+
+        .preview-content::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+        }
+
+        .preview-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .preview-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .preview-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ACCM Dialer Versions</h1>
+        <div class="file-explorer">
+            <div class="breadcrumb">
+                <a href="#"><i class="fas fa-home"></i> Home</a>
+                <i class="fas fa-chevron-right"></i>
+                <span>Files</span>
+            </div>
+            <div id="file-list">
+            </div>
+        </div>
+    </div>
+
+    <div id="preview" class="preview-popup">
+        <button class="preview-close"><i class="fas fa-times"></i></button>
+        <div class="preview-content"></div>
+    </div>
+
+    <footer>
+        <p>© 2024 ACCM Technology. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const owner = 'ACCM-Tech';
+        const repo = 'ACCM---Auto-Dialer-Versions';
+        const preview = document.getElementById('preview');
+        const previewContent = preview.querySelector('.preview-content');
+        const closeButton = preview.querySelector('.preview-close');
+
+        async function showPreview(event, fileUrl) {
+            event.preventDefault();
+            const response = await fetch(fileUrl);
+            const content = await response.text();
+            
+            previewContent.innerHTML = marked.parse(content);
+            preview.classList.add('active');
+            hljs.highlightAll();
+        }
+
+        closeButton.addEventListener('click', () => {
+            preview.classList.remove('active');
+        });
+
+        function fetchContents(path = '') {
+            fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`)
+                .then(response => response.json())
+                .then(data => {
+                    const fileList = document.getElementById('file-list');
+                    fileList.innerHTML = '';
+                    
+                    data.forEach(item => {
+                        const itemLink = document.createElement('a');
+                        itemLink.href = item.html_url;
+                        itemLink.className = `item ${item.type === 'dir' ? 'folder' : 'file'}`;
+                        itemLink.innerHTML = `
+                            <i class="fas fa-${item.type === 'dir' ? 'folder' : 'file-alt'}"></i>
+                            <span>${item.name}</span>
+                        `;
+
+                        if (item.name.toLowerCase().endsWith('.md')) {
+                            itemLink.addEventListener('click', (e) => {
+                                showPreview(e, item.download_url);
+                            });
+                        }
+
+                        fileList.appendChild(itemLink);
+                    });
+                })
+                .catch(error => {
+                    document.getElementById('file-list').innerHTML = `
+                        <div class="item">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>Error loading files. Please try again.</span>
+                        </div>
+                    `;
+                });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!preview.contains(e.target) && !e.target.closest('.item')) {
+                preview.classList.remove('active');
+            }
+        });
+
+        fetchContents();
+    </script>
+</body>
+</html>
