@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACCM Dialer Versions</title>
+    <title>ACCM FS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/styles/github-dark.min.css">
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
@@ -225,9 +225,9 @@
         }
     </style>
 </head>
-<body>
+<body id="app">
     <div class="container">
-        <h1>ACCM Dialer Versions</h1>
+        <h1>ACCM REPOSITORY</h1>
         <div class="file-explorer">
             <div class="breadcrumb">
                 <a href="#"><i class="fas fa-home"></i> Home</a>
@@ -254,33 +254,40 @@ const repo = 'ACCM---Auto-Dialer-Versions';
 const preview = document.getElementById('preview');
 const previewContent = preview.querySelector('.preview-content');
 const closeButton = preview.querySelector('.preview-close');
-
+const breadcrumb = document.querySelector('.breadcrumb');
+let currentPath = [];
+function updateBreadcrumb() {
+    breadcrumb.innerHTML = `
+        <a href="#" data-path=""><i class="fas fa-home"></i> Home</a>
+    `;
+    currentPath.forEach((path, index) => {
+        breadcrumb.innerHTML += `
+            <i class="fas fa-chevron-right"></i>
+            <a href="#" data-path="${currentPath.slice(0, index + 1).join('/')}">${path}</a>
+        `;
+    });
+}
 async function showPreview(event, fileUrl, fileType) {
     event.preventDefault();
     const response = await fetch(fileUrl);
     const content = await response.text();
-    
     if (fileType === 'md') {
         previewContent.innerHTML = marked.parse(content);
     } else if (fileType === 'html') {
         previewContent.innerHTML = `<pre><code class="language-html">${content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
     }
-    
     preview.classList.add('active');
     hljs.highlightAll();
 }
-
 closeButton.addEventListener('click', () => {
     preview.classList.remove('active');
 });
-
 function fetchContents(path = '') {
     fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`)
         .then(response => response.json())
         .then(data => {
             const fileList = document.getElementById('file-list');
             fileList.innerHTML = '';
-            
             data.forEach(item => {
                 const itemLink = document.createElement('a');
                 itemLink.href = item.html_url;
@@ -289,7 +296,6 @@ function fetchContents(path = '') {
                     <i class="fas fa-${item.type === 'dir' ? 'folder' : 'file-alt'}"></i>
                     <span>${item.name}</span>
                 `;
-
                 const fileExtension = item.name.split('.').pop().toLowerCase();
                 if (fileExtension === 'md' || fileExtension === 'html') {
                     itemLink.addEventListener('click', (e) => {
@@ -298,10 +304,11 @@ function fetchContents(path = '') {
                 } else if (item.type === 'dir') {
                     itemLink.addEventListener('click', (e) => {
                         e.preventDefault();
+                        currentPath = item.path.split('/');
+                        updateBreadcrumb();
                         fetchContents(item.path);
                     });
                 }
-
                 fileList.appendChild(itemLink);
             });
         })
@@ -314,14 +321,29 @@ function fetchContents(path = '') {
             `;
         });
 }
+breadcrumb.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (e.target.closest('a')) {
+        const path = e.target.closest('a').dataset.path;
+        currentPath = path ? path.split('/') : [];
+        updateBreadcrumb();
+        fetchContents(path);
+    }
+});
 document.addEventListener('click', (e) => {
     if (!preview.contains(e.target) && !e.target.closest('.item')) {
         preview.classList.remove('active');
     }
 });
-
 fetchContents();
 
+const password = "ACCM2024";
+const bodyHideInitially = document.querySelector('#app');
+bodyHideInitially.style.display = 'none';
+
+if (password === prompt("Enter password")) {
+    bodyHideInitially.style.display = 'block';
+}
     </script>
 </body>
 </html>
